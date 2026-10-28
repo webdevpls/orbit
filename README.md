@@ -135,7 +135,7 @@ Clique no ícone do Orbit na barra de menus:
 
 - Clique num **item do anel** para ver os detalhes. Dá para **testar**, **trocar**, **remover** ou **girar** ele de posição.
 - Clique no **+** no centro para adicionar. Escolha entre **Apps**, **Sites**, **Arquivos**, **Atalhos** e **Sistema**.
-- Sites mostram o ícone do próprio site. Apps e arquivos que foram apagados aparecem em cinza.
+- Sites mostram o ícone do próprio site, ou do app dele se estiver instalado. Apps e arquivos que foram apagados aparecem em cinza.
 
 <br clear="right">
 
@@ -156,7 +156,7 @@ Clique na **engrenagem** no painel.
 ## Privacidade
 
 - O Orbit usa a permissão de Acessibilidade **só** para ler os botões do mouse, a posição do cursor e as teclas de navegação **enquanto o anel está aberto**. Nada é gravado ou enviado.
-- A única conexão de rede é para baixar o ícone dos sites que você coloca no anel, direto do próprio site (`/apple-touch-icon.png` ou `/favicon.ico`). Ele fica em cache em `~/Library/Caches/Orbit`.
+- A única conexão de rede é para baixar o ícone dos sites que você coloca no anel: primeiro direto do próprio site (`/apple-touch-icon.png` ou `/favicon.ico`) e, se o site bloquear, pelo serviço de ícones do DuckDuckGo (que recebe só o domínio). Se você tiver o app do site instalado (ChatGPT, WhatsApp…), o Orbit usa o ícone do app e nem acessa a rede. O ícone fica em cache em `~/Library/Caches/Orbit`.
 - Sem analytics, sem telemetria, sem checagem de atualização.
 - O anel e os ajustes ficam só no seu Mac, em `~/Library/Preferences/io.github.orbit-ring.plist`.
 

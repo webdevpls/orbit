@@ -107,7 +107,7 @@ While the ring is open: `1`–`8` open that slot (1 is at the top, then clockwis
 ## Privacy
 
 - Accessibility access is used **only** to read mouse buttons, the pointer position and navigation keys **while the ring is open**. Nothing is recorded or sent anywhere.
-- The only network access fetches icons for websites you add, straight from that site (`/apple-touch-icon.png` or `/favicon.ico`), cached in `~/Library/Caches/Orbit`.
+- The only network access fetches icons for websites you add: first from the site itself (`/apple-touch-icon.png` or `/favicon.ico`), then, if the site blocks that, from DuckDuckGo's icon service (which only sees the domain). If the site's app is installed (ChatGPT, WhatsApp…), Orbit uses the app's icon and skips the network. Icons are cached in `~/Library/Caches/Orbit`.
 - No analytics, no telemetry, no update checks.
 - Your ring and settings stay on your Mac in `~/Library/Preferences/io.github.orbit-ring.plist`.
 

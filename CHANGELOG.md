@@ -2,6 +2,13 @@
 
 Todas as mudanças importantes do Orbit ficam registradas aqui. O projeto segue o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.1.1] - 2026-10-27
+
+### Correções
+- Sites que bloqueiam o download do ícone (como o chatgpt.com) agora mostram o ícone em vez do globo.
+- Sites com app instalado (ChatGPT, WhatsApp, Claude…) usam o ícone do app, em alta qualidade.
+- A logo no topo do painel voltou a aparecer.
+
 ## [0.1.0] - 2026-10-27
 
 Primeira versão pública.
@@ -16,4 +23,5 @@ Primeira versão pública.
 - Ajustes de botão, atalho, tamanho do anel, idioma e abrir ao iniciar sessão.
 - Interface em português e inglês.
 
+[0.1.1]: https://github.com/webdevpls/orbit/releases/tag/v0.1.1
 [0.1.0]: https://github.com/webdevpls/orbit/releases/tag/v0.1.0

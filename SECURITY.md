@@ -17,7 +17,7 @@ Inclua a versão do Orbit e do macOS, o passo a passo para reproduzir e o impact
 
 - Usa a permissão de **Acessibilidade** para observar os botões do mouse. Teclas só são lidas **enquanto o anel está aberto** (Esc, Return, setas, 1–8); fora disso passam direto, sem serem inspecionadas.
 - **Nunca grava, salva ou envia** cliques, teclas ou posições do cursor.
-- A única conexão de rede baixa o ícone dos sites que você adiciona ao anel, direto do próprio site. O `install.sh` baixa a release do GitHub.
+- A única conexão de rede baixa o ícone dos sites que você adiciona ao anel: do próprio site ou, se ele bloquear, do serviço de ícones do DuckDuckGo (que recebe só o domínio). O `install.sh` baixa a release do GitHub.
 - Guarda as preferências só no seu Mac (`~/Library/Preferences/io.github.orbit-ring.plist`).
 
 ## Verificando um download

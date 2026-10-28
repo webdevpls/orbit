@@ -29,11 +29,32 @@ final class IconProvider: ObservableObject {
         case .system(let system):
             return .symbol(system.symbol)
         case .website(let url, _):
+            if let path = matchingApp(for: action) { return .image(fileIcon(path)) }
             guard let host = URL(string: ActionRunner.normalizedURL(url))?.host else { return .symbol("globe") }
             if let image = images["web:" + host] { return .image(image) }
             loadFavicon(host)
             return .symbol("globe")
         }
+    }
+
+    /// Installed apps by normalized name ("chatgpt", "whatsapp", "googledrive"…).
+    private lazy var appsByName: [String: String] = {
+        Dictionary(Catalog.installedApps().map { (Self.normalize($0.name), $0.path) }, uniquingKeysWith: { first, _ in first })
+    }()
+
+    /// An installed app for a website, when its name or domain matches (chatgpt.com → ChatGPT.app).
+    /// Its icon looks better than a favicon, and some sites block favicon downloads.
+    func matchingApp(for action: Action) -> String? {
+        guard case .website(let url, let name) = action else { return nil }
+        var keys = [Self.normalize(name)]
+        if let labels = URL(string: ActionRunner.normalizedURL(url))?.host?.split(separator: "."), labels.count >= 2 {
+            keys.append(Self.normalize(String(labels[labels.count - 2]))) // domain without TLD or subdomain
+        }
+        return keys.lazy.filter { !$0.isEmpty }.compactMap { self.appsByName[$0] }.first
+    }
+
+    private static func normalize(_ string: String) -> String {
+        string.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 
     private var tints: [String: Color] = [:]
@@ -89,7 +110,8 @@ final class IconProvider: ObservableObject {
         return image
     }
 
-    /// Fetches the site's touch icon (or favicon) straight from the site itself, once, and keeps it on disk.
+    /// Fetches the site's touch icon (or favicon) once and keeps it on disk. Tries the site itself first; sites that
+    /// block it (Cloudflare challenges, like chatgpt.com) fall back to DuckDuckGo's icon service.
     private func loadFavicon(_ host: String) {
         let key = "web:" + host
         let file = cacheDir.appendingPathComponent(host + ".png")
@@ -102,8 +124,9 @@ final class IconProvider: ObservableObject {
 
         Task {
             let candidates = ["apple-touch-icon.png", "apple-touch-icon-precomposed.png", "favicon.ico"]
-            for name in candidates {
-                guard let url = URL(string: "https://\(host)/\(name)"),
+                .map { "https://\(host)/\($0)" } + ["https://icons.duckduckgo.com/ip3/\(host).ico"]
+            for candidate in candidates {
+                guard let url = URL(string: candidate),
                       let (data, response) = try? await URLSession.shared.data(from: url),
                       (response as? HTTPURLResponse)?.statusCode == 200,
                       let image = NSImage(data: data), image.size.width >= 16
@@ -129,7 +152,7 @@ struct ActionIcon: View {
     var body: some View {
         switch provider.icon(for: action) {
         case .image(let image):
-            if case .website = action {
+            if case .website = action, provider.matchingApp(for: action) == nil {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
