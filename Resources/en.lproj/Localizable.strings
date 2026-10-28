@@ -1,0 +1,4 @@
+/* Orbit — English. English strings are the keys; only overrides go here. */
+"Small" = "S";
+"Medium" = "M";
+"Large" = "L";

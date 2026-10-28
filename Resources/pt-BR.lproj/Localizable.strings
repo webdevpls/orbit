@@ -1,0 +1,87 @@
+/* Orbit — Português (Brasil) */
+
+/* Ring */
+"Add apps in the menu bar" = "Adicione apps na barra de menus";
+"Add" = "Adicionar";
+"Full" = "Cheio";
+
+/* Panel */
+"Active" = "Ativo";
+"Paused" = "Pausado";
+"Settings" = "Ajustes";
+"Back" = "Voltar";
+"Accessibility access needed" = "Acesso de Acessibilidade necessário";
+"Lets Orbit see the scroll wheel click." = "Permite ao Orbit ver o clique do scroll.";
+"Allow" = "Permitir";
+"Click an item to edit it. Hold, point and release to open, or click once and choose." = "Clique num item para editar. Segure, aponte e solte para abrir, ou clique uma vez e escolha.";
+"No trigger set" = "Nenhum atalho definido";
+"Not found" = "Não encontrado";
+"Move clockwise" = "Mover no sentido horário";
+"Move counterclockwise" = "Mover no sentido anti-horário";
+"Test" = "Testar";
+"Change" = "Trocar";
+"Remove" = "Remover";
+
+/* Kinds */
+"App" = "App";
+"Website" = "Site";
+"Folder" = "Pasta";
+"File" = "Arquivo";
+"Shortcut" = "Atalho";
+"System" = "Sistema";
+
+/* Picker */
+"Add to Ring" = "Adicionar ao anel";
+"Replace Item" = "Trocar item";
+"Apps" = "Apps";
+"Sites" = "Sites";
+"Files" = "Arquivos";
+"Shortcuts" = "Atalhos";
+"Search apps" = "Buscar apps";
+"Search shortcuts" = "Buscar atalhos";
+"No apps found" = "Nenhum app encontrado";
+"Address (e.g. github.com)" = "Endereço (ex.: github.com)";
+"Name (optional)" = "Nome (opcional)";
+"Add Site" = "Adicionar site";
+"Suggestions" = "Sugestões";
+"Choose File or Folder…" = "Escolher arquivo ou pasta…";
+"Opens with its default app" = "Abre com o app padrão";
+"Places" = "Locais";
+"Home" = "Início";
+"Desktop" = "Mesa";
+"Documents" = "Documentos";
+"Downloads" = "Downloads";
+"Applications" = "Aplicativos";
+"No shortcuts yet. Create one in the Shortcuts app." = "Nenhum atalho ainda. Crie um no app Atalhos.";
+
+/* System actions */
+"Screenshot" = "Captura de Tela";
+"Mission Control" = "Mission Control";
+"All Apps" = "Todos os Apps";
+"Lock Screen" = "Bloquear Tela";
+"Sleep Display" = "Desligar Tela";
+"Emoji & Symbols" = "Emojis e Símbolos";
+"Desktop Folder" = "Pasta Mesa";
+
+/* Settings */
+"Open the Ring With" = "Abrir o anel com";
+"Mouse Button" = "Botão do mouse";
+"Keyboard Shortcut" = "Atalho de teclado";
+"Quick Click Keeps It Open" = "Clique rápido mantém aberto";
+"Scroll Wheel Click" = "Clique do scroll";
+"Back Button" = "Botão voltar";
+"Forward Button" = "Botão avançar";
+"Off" = "Desligado";
+"Appearance" = "Aparência";
+"Ring Size" = "Tamanho do anel";
+"Small" = "P";
+"Medium" = "M";
+"Large" = "G";
+"General" = "Geral";
+"Language" = "Idioma";
+"Automatic" = "Automático";
+"Launch at Login" = "Abrir ao iniciar sessão";
+"Accessibility Permission…" = "Permissão de Acessibilidade…";
+"Restore Default Ring" = "Restaurar anel padrão";
+"Quit Orbit" = "Sair do Orbit";
+"Orbit %@ · Developed by Vision Tech" = "Orbit %@ · Desenvolvido pela Vision Tech";
