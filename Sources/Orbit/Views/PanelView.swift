@@ -49,8 +49,7 @@ struct PanelView: View {
             header
             if !store.accessibilityTrusted { PermissionCard() }
             EditorRing(selection: $selection) { page = .picker(replacing: nil) }
-                .padding(.vertical, 2)
-                .glassCard(cornerRadius: 22)
+                .padding(.vertical, 4)
             if let id = selection, let slot = store.slots.first(where: { $0.id == id }) {
                 SlotCard(slot: slot,
                          onChange: { page = .picker(replacing: id) },
@@ -155,6 +154,9 @@ private struct SlotCard: View {
                     Text(slot.action.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                     HStack(spacing: 4) {
                         Text(L(slot.action.kind))
+                        if let index = store.slots.firstIndex(of: slot) {
+                            Text("· " + String(format: L("Key %d"), index + 1))
+                        }
                         if !slot.action.isAvailable {
                             Text("· " + L("Not found")).foregroundStyle(.orange)
                         }
@@ -182,70 +184,67 @@ private struct SlotCard: View {
     }
 }
 
-/// The ring as an editor: click a bubble to select it, the hub adds a new item.
+/// The ring as an editor: click an icon to select it, the hub adds a new item.
 private struct EditorRing: View {
     @EnvironmentObject private var store: OrbitStore
     @Binding var selection: Slot.ID?
     let onAdd: () -> Void
-    @State private var hovered: Slot.ID?
-    @State private var hubHovered = false
+    @State private var hovered: Int?
 
-    private let geometry = RingGeometry(scale: 0.8)
+    private let geometry = RingGeometry(scale: 0.9)
 
     var body: some View {
-        let g = geometry
-        let count = store.slots.count
-        let size = (g.radius + g.bubble / 2) * 2 + 24
-
-        GlassGroup(spacing: 14) {
-            ZStack {
-                ForEach(Array(store.slots.enumerated()), id: \.element.id) { index, slot in
-                    let isSelected = selection == slot.id
-                    RingBubble(action: slot.action, size: g.bubble, selected: isSelected)
-                        .overlay(alignment: .topTrailing) {
-                            Text("\(index + 1)")
-                                .font(.system(size: 9, weight: .bold).monospacedDigit())
-                                .foregroundStyle(.secondary)
-                                .frame(width: 15, height: 15)
-                                .glassCircle()
-                                .offset(x: 3, y: -3)
-                                .opacity(isSelected || hovered == slot.id ? 1 : 0)
-                        }
-                        .scaleEffect(isSelected ? 1.12 : (hovered == slot.id ? 1.06 : 1))
-                        .contentShape(Circle())
-                        .onTapGesture { withAnimation(.snappy(duration: 0.22)) { selection = isSelected ? nil : slot.id } }
-                        .onHover { hovered = $0 ? slot.id : (hovered == slot.id ? nil : hovered) }
-                        .offset(g.offset(index, of: count))
-                        .help(slot.action.title)
-                }
-
-                Button(action: onAdd) {
-                    VStack(spacing: 3) {
-                        Image(systemName: store.canAdd ? "plus" : "circle.grid.cross.fill")
-                            .font(.system(size: 17, weight: .semibold))
-                        Text(L(store.canAdd ? "Add" : "Full"))
-                            .font(.system(size: 10, weight: .semibold))
-                        if store.canAdd {
-                            Text("\(count)/\(OrbitStore.maxSlots)")
-                                .font(.system(size: 9, weight: .medium).monospacedDigit())
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
-                    .foregroundStyle(hubHovered && store.canAdd ? Color.primary : Color.secondary)
-                    .frame(width: g.hub, height: g.hub)
-                    .glassCircle(tint: hubHovered && store.canAdd ? Color.white.opacity(0.18) : nil)
-                    .contentShape(Circle())
-                    .scaleEffect(hubHovered && store.canAdd ? 1.05 : 1)
-                }
-                .buttonStyle(.plain)
-                .disabled(!store.canAdd)
-                .onHover { hubHovered = $0 }
-            }
+        let slots = store.slots
+        RingDisc(
+            slots: slots,
+            geometry: geometry,
+            selected: slots.firstIndex { $0.id == selection },
+            hovered: hovered,
+            onTap: { index in
+                let id = slots[index].id
+                withAnimation(.snappy(duration: 0.22)) { selection = selection == id ? nil : id }
+            },
+            onHover: { hovered = $0 }
+        ) {
+            AddHub(size: geometry.hub, count: slots.count, canAdd: store.canAdd, action: onAdd)
         }
-        .frame(width: size, height: size)
+        .frame(width: geometry.disc + 24, height: geometry.disc + 24)
         .frame(maxWidth: .infinity)
-        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: store.slots)
-        .animation(.snappy(duration: 0.18), value: hovered)
-        .animation(.snappy(duration: 0.18), value: hubHovered)
+        .animation(.spring(response: 0.35, dampingFraction: 0.78), value: store.slots)
+    }
+}
+
+/// Center button of the editor ring.
+private struct AddHub: View {
+    let size: CGFloat
+    let count: Int
+    let canAdd: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: canAdd ? "plus" : "checkmark")
+                    .font(.system(size: 18, weight: .semibold))
+                Text("\(count)/\(OrbitStore.maxSlots)")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(.tertiary)
+            }
+            .foregroundStyle(hovering && canAdd ? Color.primary : Color.secondary)
+            .frame(width: size, height: size)
+            .background(
+                Circle()
+                    .fill(Color.primary.opacity(hovering && canAdd ? 0.1 : 0.05))
+                    .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            )
+            .contentShape(Circle())
+            .scaleEffect(hovering && canAdd ? 1.04 : 1)
+        }
+        .buttonStyle(.plain)
+        .disabled(!canAdd)
+        .help(L(canAdd ? "Add" : "Full"))
+        .onHover { hovering = $0 }
+        .animation(.snappy(duration: 0.18), value: hovering)
     }
 }

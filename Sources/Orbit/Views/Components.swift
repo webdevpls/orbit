@@ -145,24 +145,6 @@ struct OrbitMark: View {
     }
 }
 
-/// Groups glass shapes so they blend and morph into each other on macOS 26.
-struct GlassGroup<Content: View>: View {
-    var spacing: CGFloat
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        #if compiler(>=6.2)
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { content }
-        } else {
-            content
-        }
-        #else
-        content
-        #endif
-    }
-}
-
 extension View {
     /// Liquid Glass card on macOS 26, translucent card on earlier systems.
     @ViewBuilder

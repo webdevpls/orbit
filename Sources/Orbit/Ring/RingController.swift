@@ -4,13 +4,17 @@ import SwiftUI
 /// Sizes of the ring, scaled by the user's ring size setting.
 struct RingGeometry {
     var scale: CGFloat = 1
-    var radius: CGFloat { 100 * scale }
-    var bubble: CGFloat { 60 * scale }
-    var hub: CGFloat { 84 * scale }
+    /// Distance from the center to each icon.
+    var radius: CGFloat { 98 * scale }
+    var icon: CGFloat { 44 * scale }
+    var lens: CGFloat { 62 * scale }
+    var hub: CGFloat { 88 * scale }
+    var disc: CGFloat { (radius + lens / 2 + 10 * scale) * 2 }
     /// Pointer distance from the center below which nothing is selected.
-    var deadZone: CGFloat { hub * 0.42 }
-    var outerRadius: CGFloat { radius + bubble / 2 + 14 }
-    var canvas: CGFloat { (radius + bubble) * 2 + 40 }
+    var deadZone: CGFloat { hub * 0.4 }
+    var outerRadius: CGFloat { disc / 2 + 8 }
+    /// Window size, with room for the shadow and the selection pop.
+    var canvas: CGFloat { disc + 80 }
 
     /// Offset of slot `index` from the center; slot 0 is at the top, then clockwise.
     func offset(_ index: Int, of count: Int) -> CGSize {
