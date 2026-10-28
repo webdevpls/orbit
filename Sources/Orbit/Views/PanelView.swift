@@ -233,11 +233,7 @@ private struct AddHub: View {
             }
             .foregroundStyle(hovering && canAdd ? Color.primary : Color.secondary)
             .frame(width: size, height: size)
-            .background(
-                Circle()
-                    .fill(Color.primary.opacity(hovering && canAdd ? 0.1 : 0.05))
-                    .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-            )
+            .background(HubBackground(highlighted: hovering && canAdd))
             .contentShape(Circle())
             .scaleEffect(hovering && canAdd ? 1.04 : 1)
         }

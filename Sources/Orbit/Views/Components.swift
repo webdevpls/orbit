@@ -34,15 +34,16 @@ struct AmbientBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let strength = colorScheme == .dark ? 0.12 : 0.07
+        let strength = colorScheme == .dark ? 0.26 : 0.16
         ZStack {
             // A light base tint keeps the glass legible over bright windows.
             Rectangle().fill(colorScheme == .dark ? Color.black.opacity(0.3) : Color.white.opacity(0.35))
 
             ZStack {
-                Circle().fill(Theme.violet).frame(width: 220).offset(x: -110, y: -170)
-                Circle().fill(Theme.teal).frame(width: 200).offset(x: 120, y: 30)
-                Circle().fill(Theme.pink).frame(width: 180).offset(x: -60, y: 220)
+                Circle().fill(Theme.violet).frame(width: 240).offset(x: -120, y: -190)
+                Circle().fill(Theme.blue).frame(width: 180).offset(x: 130, y: -120)
+                Circle().fill(Theme.teal).frame(width: 220).offset(x: 120, y: 90)
+                Circle().fill(Theme.pink).frame(width: 200).offset(x: -90, y: 230)
             }
             .opacity(strength)
             .blur(radius: 70)
@@ -152,6 +153,7 @@ extension View {
         #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
             glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                .overlay(GlassRim(shape: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)))
         } else {
             fallbackGlass(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
@@ -179,6 +181,7 @@ extension View {
         #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
             glassEffect(.regular, in: .capsule)
+                .overlay(GlassRim(shape: Capsule()))
         } else {
             fallbackGlass(Capsule())
         }
@@ -191,10 +194,19 @@ extension View {
         background(
             shape.fill(.ultraThinMaterial)
                 .overlay(shape.fill(tint ?? .clear))
-                .overlay(
-                    shape.strokeBorder(LinearGradient(colors: [.white.opacity(0.35), .white.opacity(0.05)],
-                                                      startPoint: .top, endPoint: .bottom), lineWidth: 0.75)
-                )
+                .overlay(GlassRim(shape: shape))
         )
+    }
+}
+
+/// Thin light edge, brighter at the top-left: the glassmorphism border.
+struct GlassRim<S: InsettableShape>: View {
+    let shape: S
+
+    var body: some View {
+        shape
+            .strokeBorder(LinearGradient(colors: [.white.opacity(0.5), .white.opacity(0.06), .white.opacity(0.18)],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.9)
+            .allowsHitTesting(false)
     }
 }

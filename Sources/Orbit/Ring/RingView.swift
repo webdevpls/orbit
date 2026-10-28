@@ -33,54 +33,89 @@ struct RingDisc<Hub: View>: View {
     /// Unwrapped lens angle, so it always takes the short way around.
     @State private var lensAngle: CGFloat = -.pi / 2
     @State private var lensVisible = false
+    @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var icons = IconProvider.shared
+
+    private var glowColor: Color {
+        guard let selected, slots.indices.contains(selected) else { return .clear }
+        return icons.tint(for: slots[selected].action)
+    }
 
     var body: some View {
         let g = geometry
         let count = slots.count
 
         ZStack {
-            // The disc.
+            // Soft shadow, drawn on its own: a shadow on the glass itself renders as a square.
+            Circle()
+                .fill(Color.black.opacity(0.28))
+                .frame(width: g.disc * 0.92, height: g.disc * 0.92)
+                .blur(radius: 22 * g.scale)
+                .offset(y: 12 * g.scale)
+                .allowsHitTesting(false)
+
+            // Frosted glass disc.
             Circle()
                 .fill(Color.clear)
                 .frame(width: g.disc, height: g.disc)
                 .glassCircle()
+
+            // Colored light drifting inside the glass, strongest along the icon track.
+            Aurora(paused: !presented)
+                .frame(width: g.disc, height: g.disc)
+                // A radial gradient fades the light in a ring around the track (a blurred mask renders square).
+                .mask(
+                    RadialGradient(stops: [
+                        .init(color: .clear, location: 0.42),
+                        .init(color: .white, location: 0.68),
+                        .init(color: .white, location: 0.8),
+                        .init(color: .clear, location: 1),
+                    ], center: .center, startRadius: 0, endRadius: g.disc / 2)
+                )
+                .opacity(colorScheme == .dark ? 0.5 : 0.38)
+                .allowsHitTesting(false)
+
+            // Sheen and bright rim: the glassmorphism edge.
+            Circle()
+                .fill(LinearGradient(colors: [.white.opacity(0.16), .white.opacity(0)], startPoint: .top, endPoint: .center))
+                .frame(width: g.disc, height: g.disc)
                 .overlay(
                     Circle().strokeBorder(
-                        LinearGradient(colors: [.white.opacity(0.55), .white.opacity(0.08), .white.opacity(0.2)],
-                                       startPoint: .top, endPoint: .bottom),
-                        lineWidth: 1)
+                        LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0.1), .white.opacity(0.35)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 1.2)
                 )
-                .shadow(color: .black.opacity(0.22), radius: 22 * g.scale, y: 10 * g.scale)
+                .allowsHitTesting(false)
 
-            // Faint orbit line the icons sit on.
+            // Glow in the selected app's color, gliding along the ring.
             Circle()
-                .stroke(Color.primary.opacity(0.07), lineWidth: 1)
-                .frame(width: g.radius * 2, height: g.radius * 2)
-
-            // Selection lens.
-            GlassLens(size: g.lens, firing: firing != nil)
+                .fill(glowColor)
+                .frame(width: g.lens * 1.3, height: g.lens * 1.3)
+                .blur(radius: 16 * g.scale)
                 .modifier(ArcPosition(angle: lensAngle, radius: g.radius))
-                .opacity(lensVisible ? 1 : 0)
-                .scaleEffect(lensVisible ? 1 : 0.6)
+                .opacity(lensVisible ? (firing != nil ? 1 : 0.8) : 0)
+                .scaleEffect(lensVisible ? 1 : 0.5)
+                .allowsHitTesting(false)
 
             ForEach(Array(slots.enumerated()), id: \.element.id) { index, slot in
                 let isSelected = selected == index
-                let emphasis: CGFloat = isSelected ? (firing == index ? 1.24 : 1.14) : (hovered == index ? 1.07 : 1)
-                ActionIcon(action: slot.action, size: g.icon)
-                    .saturation(slot.action.isAvailable ? 1 : 0)
-                    .opacity(slot.action.isAvailable ? 1 : 0.45)
-                    .shadow(color: .black.opacity(0.22), radius: 3, y: 1.5)
-                    .frame(width: g.lens, height: g.lens)
-                    .contentShape(Circle())
-                    .scaleEffect(presented ? emphasis : 0.4)
-                    .opacity(presented ? 1 : 0)
-                    .offset(presented ? g.offset(index, of: count) : .zero)
-                    .animation(.spring(response: 0.42, dampingFraction: 0.78)
-                        .delay(presented ? Double(index) * 0.018 : 0), value: presented)
-                    .animation(.spring(response: 0.28, dampingFraction: 0.68), value: emphasis)
-                    .onTapGesture { onTap?(index) }
-                    .onHover { inside in onHover?(inside ? index : (hovered == index ? nil : hovered)) }
-                    .help(onTap == nil ? "" : slot.action.title)
+                let emphasis: CGFloat = isSelected ? (firing == index ? 1.22 : 1.12) : (hovered == index ? 1.06 : 1)
+                GlassTile(size: g.lens * 0.94, lit: isSelected || hovered == index) {
+                    ActionIcon(action: slot.action, size: g.icon)
+                        .saturation(slot.action.isAvailable ? 1 : 0)
+                        .opacity(slot.action.isAvailable ? 1 : 0.45)
+                        .shadow(color: .black.opacity(0.25), radius: 3, y: 1.5)
+                }
+                .contentShape(Circle())
+                .scaleEffect(presented ? emphasis : 0.4)
+                .opacity(presented ? 1 : 0)
+                .offset(presented ? g.offset(index, of: count) : .zero)
+                .animation(.spring(response: 0.42, dampingFraction: 0.78)
+                    .delay(presented ? Double(index) * 0.018 : 0), value: presented)
+                .animation(.spring(response: 0.28, dampingFraction: 0.68), value: emphasis)
+                .onTapGesture { onTap?(index) }
+                .onHover { inside in onHover?(inside ? index : (hovered == index ? nil : hovered)) }
+                .help(onTap == nil ? "" : slot.action.title)
             }
 
             hub
@@ -129,32 +164,41 @@ private struct ArcPosition: ViewModifier, Animatable {
     }
 }
 
-/// The bright glass bead behind the selected icon.
-private struct GlassLens: View {
+/// Frosted glass tile under each icon; brighter when lit.
+private struct GlassTile<Content: View>: View {
     var size: CGFloat
-    var firing = false
+    var lit = false
+    @ViewBuilder var content: Content
 
     var body: some View {
-        Circle()
-            .fill(LinearGradient(colors: [.white.opacity(0.42), .white.opacity(0.14)], startPoint: .top, endPoint: .bottom))
-            .overlay(
-                Circle().strokeBorder(
-                    LinearGradient(colors: [.white.opacity(0.95), .white.opacity(0.2), .white.opacity(0.5)],
-                                   startPoint: .top, endPoint: .bottom),
-                    lineWidth: 1.2)
-            )
-            .overlay(
-                // Specular highlight.
-                Ellipse()
-                    .fill(LinearGradient(colors: [.white.opacity(0.55), .white.opacity(0)], startPoint: .top, endPoint: .bottom))
-                    .scaleEffect(x: 0.62, y: 0.32)
-                    .offset(y: -0.24 * size)
-                    .blur(radius: 1)
-            )
+        content
             .frame(width: size, height: size)
-            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
-            .scaleEffect(firing ? 1.12 : 1)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: firing)
+            .background(
+                Circle()
+                    .fill(LinearGradient(colors: [.white.opacity(lit ? 0.4 : 0.16), .white.opacity(lit ? 0.12 : 0.03)],
+                                         startPoint: .top, endPoint: .bottom))
+                    .overlay(
+                        Circle().strokeBorder(
+                            LinearGradient(colors: [.white.opacity(lit ? 0.95 : 0.5), .white.opacity(lit ? 0.25 : 0.06)],
+                                           startPoint: .top, endPoint: .bottom),
+                            lineWidth: lit ? 1.2 : 0.8)
+                    )
+                    .shadow(color: .black.opacity(lit ? 0.22 : 0.1), radius: lit ? 8 : 3, y: lit ? 4 : 1.5)
+            )
+            .animation(.snappy(duration: 0.2), value: lit)
+    }
+}
+
+/// Slowly turning multicolor light.
+private struct Aurora: View {
+    var paused = false
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: paused)) { context in
+            let angle = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 24) / 24 * 360
+            AngularGradient(colors: [Theme.violet, Theme.blue, Theme.teal, Theme.pink, Theme.orange, Theme.violet],
+                            center: .center, angle: .degrees(angle))
+        }
     }
 }
 
@@ -166,9 +210,7 @@ struct RingLabel: View {
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(Color.primary.opacity(0.05))
-                .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            HubBackground()
 
             if let title {
                 Text(title)
@@ -193,5 +235,22 @@ struct RingLabel: View {
         }
         .frame(width: size, height: size)
         .animation(.snappy(duration: 0.16), value: title)
+    }
+}
+
+/// Frosted center disc with a bright rim, shared by the ring and the editor.
+struct HubBackground: View {
+    var highlighted = false
+
+    var body: some View {
+        Circle()
+            .fill(LinearGradient(colors: [.white.opacity(highlighted ? 0.24 : 0.12), .white.opacity(0.02)],
+                                 startPoint: .top, endPoint: .bottom))
+            .overlay(
+                Circle().strokeBorder(
+                    LinearGradient(colors: [.white.opacity(0.55), .white.opacity(0.05)], startPoint: .top, endPoint: .bottom),
+                    lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
     }
 }
