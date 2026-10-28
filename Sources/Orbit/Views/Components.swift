@@ -127,20 +127,15 @@ struct OrbitMark: View {
     var lineWidth: CGFloat? = nil
 
     var body: some View {
-        Canvas { context, canvas in
-            let s = canvas.width
-            let c = CGPoint(x: s / 2, y: s / 2)
-            let r = s * 0.38
-            let dot = s * 0.15
-            for i in 0..<8 {
+        let r = size * 0.38
+        let dot = size * 0.15
+        let hub = size * 0.3
+        ZStack {
+            ForEach(0..<8, id: \.self) { i in
                 let a = Double(i) / 8 * 2 * .pi - .pi / 2
-                let p = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
-                context.fill(Path(ellipseIn: CGRect(x: p.x - dot / 2, y: p.y - dot / 2, width: dot, height: dot)),
-                             with: .foreground)
+                Circle().frame(width: dot, height: dot).offset(x: r * cos(a), y: r * sin(a))
             }
-            let hub = s * 0.3
-            context.stroke(Path(ellipseIn: CGRect(x: c.x - hub / 2, y: c.y - hub / 2, width: hub, height: hub)),
-                           with: .foreground, lineWidth: lineWidth ?? s * 0.08)
+            Circle().stroke(lineWidth: lineWidth ?? size * 0.08).frame(width: hub, height: hub)
         }
         .frame(width: size, height: size)
     }
